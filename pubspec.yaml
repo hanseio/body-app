@@ -17,6 +17,7 @@ dependencies:
   firebase_auth: ^5.2.1
   cloud_firestore: ^5.4.1
   firebase_auth_web: ^5.8.13
+  flutter_dotenv: ^5.0.2
 
 dev_dependencies:
   flutter_test:
