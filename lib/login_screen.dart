@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/foundation.dart'; // 추가로 import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +15,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: '153020199339-b9srubcn6tqlld3gssrqtua2e47o6lr4.apps.googleusercontent.com',
+    scopes: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/user.gender.read',
+    ],
+  );
 
   Future<void> _handleGoogleSignIn() async {
     setState(() {
@@ -21,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
       final credential = GoogleAuthProvider.credential(
@@ -35,8 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        // logger.e('Google Sign-In Error', error: e); // logger 사용 시
+        debugPrint('Google Sign-In Error: $e'); // debugPrint 사용 시
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('구글 로그인 실패: $e')),
+          SnackBar(content: Text('구글 로그인 실패: ${e.toString()}')),
         );
       }
     } finally {
@@ -57,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
       OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
       // 여기서 Firebase Custom Auth를 사용해야 합니다.
       // 아래 URL은 예시이며, 실제 Firebase Function URL로 교체해야 합니다.
-      final url = Uri.https('your-firebase-function-url.com', '/kakaoCustomAuth');
+      final url = Uri.https('https://us-central1-buddy-hanse-240911-1d091.cloudfunctions.net', '/kakaoCustomAuth');
       final response = await http.post(
         url,
         body: json.encode({'kakao_access_token': token.accessToken}),
